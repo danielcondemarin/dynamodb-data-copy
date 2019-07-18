@@ -1,4 +1,4 @@
-const { execute } = require('../dynamo-db-import-export-tool');
+const { execute } = require("../index");
 
 const awsPromisify = (mockFunction, resolvedValue = undefined) =>
   mockFunction.mockReturnValue({
@@ -10,28 +10,30 @@ const awsPromisifyOnce = (mockFunction, resolvedValue = undefined) =>
     promise: () => Promise.resolve(resolvedValue)
   });
 
-function MockDynamoDBConstructor () { }
-function MockDocumentClientConstructor () { }
+function MockDynamoDBConstructor() {}
+function MockDocumentClientConstructor() {}
 MockDynamoDBConstructor.DocumentClient = MockDocumentClientConstructor;
 const mockScan = jest.fn();
 const mockBatchWrite = jest.fn();
 MockDynamoDBConstructor.DocumentClient.prototype.scan = awsPromisify(mockScan);
-MockDynamoDBConstructor.DocumentClient.prototype.batchWrite = awsPromisify(mockBatchWrite);
+MockDynamoDBConstructor.DocumentClient.prototype.batchWrite = awsPromisify(
+  mockBatchWrite
+);
 
-jest.mock('aws-sdk', () => ({
+jest.mock("aws-sdk", () => ({
   DynamoDB: MockDynamoDBConstructor
 }));
 
-describe('dynamodb import / export tool', () => {
+describe("dynamodb import / export tool", () => {
   afterEach(() => {
     mockScan.mockClear();
     mockBatchWrite.mockClear();
   });
 
-  it('copies one item from source table to destination table', async () => {
+  it("copies one item from source table to destination table", async () => {
     const item = {
-      id: '123',
-      x: 'y'
+      id: "123",
+      x: "y"
     };
 
     awsPromisify(mockScan, {
@@ -46,34 +48,36 @@ describe('dynamodb import / export tool', () => {
     awsPromisify(mockBatchWrite, batchWriteResult);
 
     const result = await execute({
-      srcTableName: 'SourceTable',
-      dstTableName: 'DestinationTable'
+      srcTableName: "SourceTable",
+      dstTableName: "DestinationTable"
     });
 
     expect(result).toEqual({ ProcessedItems: 1 });
     expect(mockScan).toBeCalledWith({
-      TableName: 'SourceTable'
+      TableName: "SourceTable"
     });
     expect(mockBatchWrite).toBeCalledWith({
       RequestItems: {
-        'DestinationTable': [{
-          PutRequest: {
-            Item: item
+        DestinationTable: [
+          {
+            PutRequest: {
+              Item: item
+            }
           }
-        }]
+        ]
       }
     });
   });
 
-  it('copies multiple items from source table to destination table', async () => {
+  it("copies multiple items from source table to destination table", async () => {
     const itemOne = {
-      id: '123',
-      x: 'y'
+      id: "123",
+      x: "y"
     };
 
     const itemTwo = {
-      id: '456',
-      b: 'c'
+      id: "456",
+      b: "c"
     };
 
     awsPromisify(mockScan, {
@@ -88,38 +92,41 @@ describe('dynamodb import / export tool', () => {
     awsPromisify(mockBatchWrite, batchWriteResult);
 
     const result = await execute({
-      srcTableName: 'SourceTable',
-      dstTableName: 'DestinationTable'
+      srcTableName: "SourceTable",
+      dstTableName: "DestinationTable"
     });
 
     expect(result).toEqual({ ProcessedItems: 2 });
     expect(mockScan).toBeCalledWith({
-      TableName: 'SourceTable'
+      TableName: "SourceTable"
     });
     expect(mockBatchWrite).toBeCalledWith({
       RequestItems: {
-        'DestinationTable': [{
-          PutRequest: {
-            Item: itemOne
+        DestinationTable: [
+          {
+            PutRequest: {
+              Item: itemOne
+            }
+          },
+          {
+            PutRequest: {
+              Item: itemTwo
+            }
           }
-        }, {
-          PutRequest: {
-            Item: itemTwo
-          }
-        }]
+        ]
       }
     });
   });
 
-  it('handles scan paginated results', async () => {
+  it("handles scan paginated results", async () => {
     const firstPageItem = {
-      id: '123',
-      x: 'y'
+      id: "123",
+      x: "y"
     };
 
     const secondPageItem = {
-      id: '456',
-      a: 'b'
+      id: "456",
+      a: "b"
     };
 
     awsPromisifyOnce(mockScan, {
@@ -140,42 +147,45 @@ describe('dynamodb import / export tool', () => {
     awsPromisify(mockBatchWrite, batchWriteResult);
 
     const result = await execute({
-      srcTableName: 'SourceTable',
-      dstTableName: 'DestinationTable'
+      srcTableName: "SourceTable",
+      dstTableName: "DestinationTable"
     });
 
     expect(result).toEqual({ ProcessedItems: 2 });
     expect(mockScan).toBeCalledWith({
-      TableName: 'SourceTable'
+      TableName: "SourceTable"
     });
     expect(mockScan).toBeCalledWith({
-      TableName: 'SourceTable',
+      TableName: "SourceTable",
       ExclusiveStartKey: firstPageItem
     });
     expect(mockBatchWrite).toBeCalledWith({
       RequestItems: {
-        'DestinationTable': [{
-          PutRequest: {
-            Item: firstPageItem
+        DestinationTable: [
+          {
+            PutRequest: {
+              Item: firstPageItem
+            }
+          },
+          {
+            PutRequest: {
+              Item: secondPageItem
+            }
           }
-        }, {
-          PutRequest: {
-            Item: secondPageItem
-          }
-        }]
+        ]
       }
     });
   });
 
-  it('handles unprocessed items from batch write', async () => {
+  it("handles unprocessed items from batch write", async () => {
     const itemOne = {
-      id: '123',
-      x: 'y'
+      id: "123",
+      x: "y"
     };
 
     const itemTwo = {
-      id: '456',
-      x: 'y'
+      id: "456",
+      x: "y"
     };
 
     awsPromisify(mockScan, {
@@ -185,11 +195,13 @@ describe('dynamodb import / export tool', () => {
 
     const firstBatchWriteResult = {
       UnprocessedItems: {
-        'DestinationTable': [{
-          PutRequest: {
-            Item: itemTwo
+        DestinationTable: [
+          {
+            PutRequest: {
+              Item: itemTwo
+            }
           }
-        }]
+        ]
       }
     };
 
@@ -201,42 +213,47 @@ describe('dynamodb import / export tool', () => {
     awsPromisifyOnce(mockBatchWrite, secondBatchWriteResult);
 
     const result = await execute({
-      srcTableName: 'SourceTable',
-      dstTableName: 'DestinationTable'
+      srcTableName: "SourceTable",
+      dstTableName: "DestinationTable"
     });
 
     expect(result).toEqual({ ProcessedItems: 2 });
     expect(mockBatchWrite).toBeCalledWith({
       RequestItems: {
-        'DestinationTable': [{
-          PutRequest: {
-            Item: itemOne
+        DestinationTable: [
+          {
+            PutRequest: {
+              Item: itemOne
+            }
+          },
+          {
+            PutRequest: {
+              Item: itemTwo
+            }
           }
-        }, {
-          PutRequest: {
-            Item: itemTwo
-          }
-        }]
+        ]
       }
     });
     expect(mockBatchWrite).toBeCalledWith({
       RequestItems: {
-        'DestinationTable': [{
-          PutRequest: {
-            Item: itemTwo
+        DestinationTable: [
+          {
+            PutRequest: {
+              Item: itemTwo
+            }
           }
-        }]
+        ]
       }
     });
   });
 
-  it('creates separate batch writes more than 25 items', async () => {
+  it("creates separate batch writes more than 25 items", async () => {
     const items = [];
 
     for (let i = 0; i < 50; i++) {
       const item = {
         id: `123-${i}`,
-        x: 'y'
+        x: "y"
       };
       items.push(item);
     }
@@ -253,13 +270,13 @@ describe('dynamodb import / export tool', () => {
     awsPromisify(mockBatchWrite, batchWriteResult);
 
     const result = await execute({
-      srcTableName: 'SourceTable',
-      dstTableName: 'DestinationTable'
+      srcTableName: "SourceTable",
+      dstTableName: "DestinationTable"
     });
 
     expect(result).toEqual({ ProcessedItems: 50 });
     expect(mockScan).toBeCalledWith({
-      TableName: 'SourceTable'
+      TableName: "SourceTable"
     });
     // calls twice in batches of 25 items
     expect(mockBatchWrite).toBeCalledTimes(2);
