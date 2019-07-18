@@ -1,0 +1,25 @@
+{
+  "name": "dynamodb-data-copy",
+  "version": "1.0.0",
+  "description": "Copies data from one Table to another Table",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielcondemarin/dynamodb-data-copy.git"
+  },
+  "keywords": [
+    "DynamoDB",
+    "Copy",
+    "Data",
+    "Migration"
+  ],
+  "author": "Daniel Conde Marin <danielconde9@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/danielcondemarin/dynamodb-data-copy/issues"
+  },
+  "homepage": "https://github.com/danielcondemarin/dynamodb-data-copy#readme"
+}
