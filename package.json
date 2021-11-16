@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/danielcondemarin/dynamodb-data-copy#readme",
   "dependencies": {
-    "aws-sdk": "^2.494.0"
+    "aws-sdk": "^2.814.0"
   },
   "devDependencies": {
     "jest": "^24.8.0"
